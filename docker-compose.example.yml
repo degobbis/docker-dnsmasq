@@ -1,0 +1,30 @@
+services:
+  dnsmasq:
+    image: degobbis/dnsmasq:latest
+    container_name: dnsmasq
+    restart: unless-stopped
+    ports:
+      - "192.168.0.2:53:53/udp" # Bind the port directly to the IP
+      - "192.168.0.2:53:53/tcp" # Bind the port directly to the IP
+    volumes:
+      - config:/etc/dnsmasq.d
+    command: -C /etc/dnsmasq.d/dnsmasq.conf
+    networks:
+      dnsmasq-net:
+        ipv4_address: 192.168.0.2 # Free IP in the subnet to use
+
+networks:
+  dnsmasq-net:
+    driver_opts:
+      iface: eth1 # Ethernet adapter to use
+    driver: qnet # This is the driver for QNAP, on other systems macvlan could be right
+    ipam:
+      driver: qnet
+      options:
+        iface: eth1
+      config:
+        - subnet: 192.168.0.0/24 # Subnet where could reache the resolver
+          gateway: 192.168.0.1 # Gateway of the subnet, mostly the router IP
+
+volumes:
+  config:
